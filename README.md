@@ -70,14 +70,27 @@ To refine prompts after editing the first frame:
 python qwen_caption_refine.py
 ```
 
-<!-- ## 📄 Citation
+## 📄 Citation
 
 If you find this work useful, please consider citing:
 ```bibtex
-@article{gao2025longvie2,
-  title={LongVie 2: Multimodal Controllable Ultra-Long Video World Model},
-  author={Gao, Jianxiong and Chen, Zhaoxi and Liu, Xian and Zhuang, Junhao and Xu, Chengming and Feng, Jianfeng and Qiao, Yu and Fu, Yanwei and Si, Chenyang and Liu, Ziwei},
-  journal={arXiv preprint arXiv:2503.06940},
-  year={2025}
+@misc{gao2025longvie,
+  title={LongVie: Multimodal-Guided Controllable Ultra-Long Video Generation}, 
+  author={Jianxiong Gao and Zhaoxi Chen and Xian Liu and Jianfeng Feng and Chenyang Si and Yanwei Fu and Yu Qiao and Ziwei Liu},
+  year={2025},
+  eprint={2508.03694},
+  archivePrefix={arXiv},
+  primaryClass={cs.CV},
+  url={https://arxiv.org/abs/2508.03694}, 
 }
-``` -->
+
+@misc{gao2025longvie2,
+  title={LongVie 2: Multimodal Controllable Ultra-Long Video World Model}, 
+  author={Jianxiong Gao and Zhaoxi Chen and Xian Liu and Junhao Zhuang and Chengming Xu and Jianfeng Feng and Yu Qiao and Yanwei Fu and Chenyang Si and Ziwei Liu},
+  year={2025},
+  eprint={2512.13604},
+  archivePrefix={arXiv},
+  primaryClass={cs.CV},
+  url={https://arxiv.org/abs/2512.13604}, 
+}
+```
