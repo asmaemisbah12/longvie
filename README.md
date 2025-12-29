@@ -1,6 +1,8 @@
 # LongVie 2: Multimodal Controllable Ultra-Long Video World Model
 
-<!-- [![ArXiv](https://img.shields.io/badge/ArXiv-2503.06940-b31b1b.svg?logo=arXiv)](https://arxiv.org/abs/2503.06940) -->
+[![ArXiv](https://img.shields.io/badge/ArXiv-2512.13604-b31b1b.svg?logo=arXiv)](https://arxiv.org/abs/2512.13604)
+[![HomePage](https://img.shields.io/badge/HomePage-Visit-blue.svg?logo=homeadvisor&logoColor=f5f5f5)](https://vchitect.github.io/LongVie2-project/)
+[![Weight](https://img.shields.io/badge/Weight-LongVie_2-faa035.svg?logo=Huggingface)](https://huggingface.co/Vchitect/LongVie2)
 
 LongVie 2 is a multimodal controllable world model for generating ultra-long videos with depth and pointmap control signals.
 
