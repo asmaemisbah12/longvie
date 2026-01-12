@@ -20,7 +20,7 @@ class WanTrainingModule(DiffusionTrainingModule):
         super().__init__()
         # Load models
         model_configs = self.parse_model_configs(model_paths, model_id_with_origin_paths, enable_fp8_training=False)
-        self.pipe = WanVideoDualControlPipeline.from_pretrained(
+        self.pipe = LongViePipeline.from_pretrained(
             torch_dtype=torch.bfloat16, device="cpu", model_configs=model_configs,
             skip_download=True,
             redirect_common_files=False,
