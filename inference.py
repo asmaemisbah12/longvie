@@ -24,7 +24,7 @@ def main(args):
     pipe = LongViePipeline.from_pretrained(
         torch_dtype=torch.bfloat16,
         device="cuda",
-        use_usp=False,
+        use_usp=args.use_usp,
         model_configs=[
             ModelConfig(model_id="Wan-AI/Wan2.1-I2V-14B-480P", origin_file_pattern="diffusion_pytorch_model*.safetensors", offload_device="cpu", skip_download=True),
             ModelConfig(model_id="Wan-AI/Wan2.1-I2V-14B-480P", origin_file_pattern="models_t5_umt5-xxl-enc-bf16.pth", offload_device="cpu", skip_download=True),
@@ -88,5 +88,6 @@ if __name__ == "__main__":
     parser.add_argument("--control_weight_path", type=str, required=True)
     parser.add_argument("--dit_weight_path", type=str, default="")
     parser.add_argument("--local_rank", type=int, default=-1)
+    parser.add_argument("--use_usp", action="store_true", help="Enable USP (default: False; set to True if provided).")
     args = parser.parse_args()
     main(args)
