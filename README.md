@@ -48,6 +48,23 @@ Generate a 5s video clip (~8-9 mins on a single A100 GPU):
 bash sample_longvideo.sh
 ```
 
+🔥 Multi-GPU Acceleration for Inference
+
+You can use the following script for multi-GPU accelerated inference. However, due to the control part using only 20 attention heads, 8-GPU inference is not supported. Currently, parallel inference is supported with 2, 4, or 5 GPUs.
+
+With 4 A100 GPUs in parallel, generating a video takes approximately 3-4 minutes.
+
+```bash
+torchrun --master_port=22519 --nproc_per_node=4 inference.py \
+    --json_file  ./example/ride_horse/cond.json \
+    --image_path ./example/ride_horse/first.png  \
+    --video_name ride_horse \
+    --control_weight_path ./models/LongVie/control.safetensors \
+    --dit_weight_path ./models/LongVie/dit.safetensors \
+    --use_usp
+```
+
+
 ### Training
 ```bash
 bash train.sh

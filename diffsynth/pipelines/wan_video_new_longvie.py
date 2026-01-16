@@ -1188,6 +1188,25 @@ def model_fn_wan_video(
     else:
         tea_cache_update = False
 
+
+    if use_unified_sequence_parallel:
+        if dist.is_initialized() and dist.get_world_size() > 1:
+            x_original_len = x.size(1)
+            dense_original_len = dense.size(1)
+            chunks = torch.chunk(x, get_sequence_parallel_world_size(), dim=1)
+            pad_shape = chunks[0].shape[1] - chunks[-1].shape[1]
+            chunks = [torch.nn.functional.pad(chunk, (0, 0, 0, chunks[0].shape[1]-chunk.shape[1]), value=0) for chunk in chunks]
+            x = chunks[get_sequence_parallel_rank()]
+
+            dense_chunks = torch.chunk(dense, get_sequence_parallel_world_size(), dim=1)
+            dense_chunks = [torch.nn.functional.pad(chunk, (0, 0, 0, dense_chunks[0].shape[1]-chunk.shape[1]), value=0) for chunk in dense_chunks]
+            dense = dense_chunks[get_sequence_parallel_rank()]
+            
+            sparse_chunks = torch.chunk(sparse, get_sequence_parallel_world_size(), dim=1)
+            sparse_chunks = [torch.nn.functional.pad(chunk, (0, 0, 0, sparse_chunks[0].shape[1]-chunk.shape[1]), value=0) for chunk in sparse_chunks]
+            sparse = sparse_chunks[get_sequence_parallel_rank()]
+
+
     # blocks
     if use_unified_sequence_parallel:
         if dist.is_initialized() and dist.get_world_size() > 1:
@@ -1203,11 +1222,6 @@ def model_fn_wan_video(
             sparse_chunks = torch.chunk(sparse, get_sequence_parallel_world_size(), dim=1)
             sparse_chunks = [torch.nn.functional.pad(chunk, (0, 0, 0, sparse_chunks[0].shape[1]-chunk.shape[1]), value=0) for chunk in sparse_chunks]
             sparse = sparse_chunks[get_sequence_parallel_rank()]
-            if history_latents is not None:
-                history_chunks = torch.chunk(history, get_sequence_parallel_world_size(), dim=1)
-                history_chunks = [torch.nn.functional.pad(chunk, (0, 0, 0, history_chunks[0].shape[1]-chunk.shape[1]), value=0) for chunk in history_chunks]
-                history = history_chunks[get_sequence_parallel_rank()]
-                history_token = history.shape[1]
 
     if tea_cache_update:
         x = tea_cache.update(x)
@@ -1265,16 +1279,44 @@ def model_fn_wan_video(
                 else:
                     dense = dense_block(dense, control_context, control_t_mod, freqs)
                     sparse = sparse_block(sparse, control_context, control_t_mod, freqs)
-                
-                if history_latents is not None:
-                    x[:,history_token:] += dual_controller.control_combine_linears[block_id](dense + sparse)
+                # for history context, we should gather x and dense to apply the indice of them
+                if use_unified_sequence_parallel and dist.is_initialized() and dist.get_world_size() > 1 and history_latents is not None:
+                    x_full = get_sp_group().all_gather(x, dim=1)
+                    x_full = x_full[:, :x_original_len]
+                    
+                    dense_full = get_sp_group().all_gather(dense, dim=1)
+                    dense_full = dense_full[:, :dense_original_len]
+                    
+                    sparse_full = get_sp_group().all_gather(sparse, dim=1)
+                    sparse_full = sparse_full[:, :dense_original_len]
+
+                    x_full[:, -dense_original_len:] += dual_controller.control_combine_linears[block_id](dense_full + sparse_full)
+
+                    x_chunks = torch.chunk(x_full, get_sequence_parallel_world_size(), dim=1)
+                    x_chunks = [torch.nn.functional.pad(chunk, (0, 0, 0, x_chunks[0].shape[1]-chunk.shape[1]), value=0) for chunk in x_chunks]
+                    x = x_chunks[get_sequence_parallel_rank()]
                 else:
-                    x += dual_controller.control_combine_linears[block_id](dense + sparse)
+                    if history_latents is not None:
+                        x[:,-dense.size(1):] += dual_controller.control_combine_linears[block_id](dense + sparse)
+                    else:
+                        x += dual_controller.control_combine_linears[block_id](dense + sparse)
+
 
         if tea_cache is not None:
             tea_cache.store(x)
+
     if history_latents is not None:
-        x = x[:, history_token:]
+        if use_unified_sequence_parallel and dist.is_initialized() and dist.get_world_size() > 1:
+            x_full = get_sp_group().all_gather(x, dim=1)
+            x_full = x_full[:, :x_original_len]
+            x_full = x_full[:, -dense_original_len:]
+            
+            x_chunks = torch.chunk(x_full, get_sequence_parallel_world_size(), dim=1)
+            current_pad_shape = x_chunks[0].shape[1] - x_chunks[-1].shape[1]
+            x_chunks = [torch.nn.functional.pad(chunk, (0, 0, 0, x_chunks[0].shape[1]-chunk.shape[1]), value=0) for chunk in x_chunks]
+            x = x_chunks[get_sequence_parallel_rank()]
+        else:
+            x = x[:, -dense.size(1):]
         f -= f_h
     x = dit.head(x, t)
     if use_unified_sequence_parallel:
