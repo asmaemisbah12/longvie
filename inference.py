@@ -34,6 +34,8 @@ def main(args):
         redirect_common_files=False,
         control_weight_path=args.control_weight_path, # control weight
         dit_weight_path=args.dit_weight_path, # attention weight
+        ring_degree=args.ring_degree, 
+        ulysses_degree=args.ulysses_degree
     )
     pipe.enable_vram_management()
 
@@ -88,6 +90,8 @@ if __name__ == "__main__":
     parser.add_argument("--control_weight_path", type=str, required=True)
     parser.add_argument("--dit_weight_path", type=str, default="")
     parser.add_argument("--local_rank", type=int, default=-1)
+    parser.add_argument("--ulysses_degree", type=int, default=1)
+    parser.add_argument("--ring_degree", type=int, default=1)
     parser.add_argument("--use_usp", action="store_true", help="Enable USP (default: False; set to True if provided).")
     args = parser.parse_args()
     main(args)

@@ -334,15 +334,15 @@ class LongViePipeline(BasePipeline):
             )
             
             
-    def initialize_usp(self):
+    def initialize_usp(self, ring_degree=2, ulysses_degree=4):
         import torch.distributed as dist
         from xfuser.core.distributed import initialize_model_parallel, init_distributed_environment
         dist.init_process_group(backend="nccl", init_method="env://")
         init_distributed_environment(rank=dist.get_rank(), world_size=dist.get_world_size())
         initialize_model_parallel(
             sequence_parallel_degree=dist.get_world_size(),
-            ring_degree=1,
-            ulysses_degree=dist.get_world_size(),
+            ring_degree=ring_degree,
+            ulysses_degree=ulysses_degree,
         )
         torch.cuda.set_device(dist.get_rank())
 
@@ -381,6 +381,8 @@ class LongViePipeline(BasePipeline):
         control_layers=12,
         Is_train=False,
         dit_weight_path="",
+        ring_degree=2, 
+        ulysses_degree=4
     ):
         # Redirect model path
         if redirect_common_files:
@@ -398,7 +400,7 @@ class LongViePipeline(BasePipeline):
         
         # Initialize pipeline
         pipe = LongViePipeline(device=device, torch_dtype=torch_dtype)
-        if use_usp: pipe.initialize_usp()
+        if use_usp: pipe.initialize_usp(ring_degree=2, ulysses_degree=4)
 
         # Download and load models
         model_manager = ModelManager()
