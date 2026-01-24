@@ -1205,23 +1205,7 @@ def model_fn_wan_video(
             sparse_chunks = torch.chunk(sparse, get_sequence_parallel_world_size(), dim=1)
             sparse_chunks = [torch.nn.functional.pad(chunk, (0, 0, 0, sparse_chunks[0].shape[1]-chunk.shape[1]), value=0) for chunk in sparse_chunks]
             sparse = sparse_chunks[get_sequence_parallel_rank()]
-
-
-    # blocks
-    if use_unified_sequence_parallel:
-        if dist.is_initialized() and dist.get_world_size() > 1:
-            chunks = torch.chunk(x, get_sequence_parallel_world_size(), dim=1)
-            pad_shape = chunks[0].shape[1] - chunks[-1].shape[1]
-            chunks = [torch.nn.functional.pad(chunk, (0, 0, 0, chunks[0].shape[1]-chunk.shape[1]), value=0) for chunk in chunks]
-            x = chunks[get_sequence_parallel_rank()]
-
-            dense_chunks = torch.chunk(dense, get_sequence_parallel_world_size(), dim=1)
-            dense_chunks = [torch.nn.functional.pad(chunk, (0, 0, 0, dense_chunks[0].shape[1]-chunk.shape[1]), value=0) for chunk in dense_chunks]
-            dense = dense_chunks[get_sequence_parallel_rank()]
             
-            sparse_chunks = torch.chunk(sparse, get_sequence_parallel_world_size(), dim=1)
-            sparse_chunks = [torch.nn.functional.pad(chunk, (0, 0, 0, sparse_chunks[0].shape[1]-chunk.shape[1]), value=0) for chunk in sparse_chunks]
-            sparse = sparse_chunks[get_sequence_parallel_rank()]
 
     if tea_cache_update:
         x = tea_cache.update(x)
