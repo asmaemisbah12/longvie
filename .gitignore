@@ -1,0 +1,43 @@
+# Byte-compiled / optimized
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+*.egg-info/
+*.egg
+.eggs/
+dist/
+build/
+
+# Model weights and checkpoints (large binaries)
+checkpoints
+utils/checkpoints/
+models/
+
+# Generated outputs
+gen_videos/
+*_ext/
+
+# Environment
+.env
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Matplotlib
+.matplotlib/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary / helper scripts
+download_spatracker.py

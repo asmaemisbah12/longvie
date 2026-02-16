@@ -1,0 +1,16 @@
+# Extra deps for extend_Video.py (depth + track extraction in utils/)
+# Install after: pip install -e .
+opencv-python
+Pillow
+numpy
+mediapy
+moviepy
+timm
+easydict
+prettytable
+scikit-image
+scikit-learn
+matplotlib
+tqdm
+flow-vis
+# cupy: match CUDA version if needed for softsplat, e.g. pip install cupy-cuda12x

@@ -13,7 +13,10 @@ import flow_vis
 from matplotlib import cm
 import torch.nn.functional as F
 import torchvision.transforms as transforms
-from moviepy.editor import ImageSequenceClip
+try:
+    from moviepy.editor import ImageSequenceClip
+except ModuleNotFoundError:
+    from moviepy import ImageSequenceClip
 import matplotlib.pyplot as plt
 
 
