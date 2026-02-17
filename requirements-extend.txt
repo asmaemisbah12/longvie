@@ -13,4 +13,4 @@ scikit-learn
 matplotlib
 tqdm
 flow-vis
-# cupy: match CUDA version if needed for softsplat, e.g. pip install cupy-cuda12x
+cupy-cuda12x  # For softsplat (CUDA 12.x)

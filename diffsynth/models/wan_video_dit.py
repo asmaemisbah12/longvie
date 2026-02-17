@@ -260,10 +260,24 @@ class Head(nn.Module):
         self.modulation = nn.Parameter(torch.randn(1, 2, dim) / dim**0.5)
 
     def forward(self, x, t_mod):
-        if len(t_mod.shape) == 3:
-            shift, scale = (self.modulation.unsqueeze(0).to(dtype=t_mod.dtype, device=t_mod.device) + t_mod.unsqueeze(2)).chunk(2, dim=2)
-            x = (self.head(self.norm(x) * (1 + scale.squeeze(2)) + shift.squeeze(2)))
+        if len(t_mod.shape) == 4:
+            # t_mod shape: [B, seq_len, 6, D] (seperated_timestep mode)
+            # Take first 2 components along dim=2 for shift and scale
+            t_mod_head = t_mod[:, :, :2, :]  # [B, seq_len, 2, D]
+            # self.modulation: [1, 2, D] -> unsqueeze -> [1, 1, 2, D] to broadcast with [B, seq_len, 2, D]
+            shift, scale = (self.modulation.unsqueeze(0).to(dtype=t_mod.dtype, device=t_mod.device) + t_mod_head).chunk(2, dim=2)
+            shift, scale = shift.squeeze(2), scale.squeeze(2)  # [B, seq_len, D]
+            x = (self.head(self.norm(x) * (1 + scale) + shift))
+        elif len(t_mod.shape) == 3:
+            # t_mod shape: [B, 6, D]
+            # Take first 2 components along dim=1 for shift and scale  
+            t_mod_head = t_mod[:, :2, :]  # [B, 2, D]
+            # self.modulation: [1, 2, D] broadcasts directly with [B, 2, D]
+            shift, scale = (self.modulation.to(dtype=t_mod.dtype, device=t_mod.device) + t_mod_head).chunk(2, dim=1)
+            shift, scale = shift.squeeze(1), scale.squeeze(1)  # [B, D]
+            x = (self.head(self.norm(x) * (1 + scale) + shift))
         else:
+            # t_mod shape: [B, D] or other
             shift, scale = (self.modulation.to(dtype=t_mod.dtype, device=t_mod.device) + t_mod).chunk(2, dim=1)
             x = (self.head(self.norm(x) * (1 + scale) + shift))
         return x

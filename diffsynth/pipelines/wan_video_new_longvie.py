@@ -1314,7 +1314,7 @@ def model_fn_wan_video(
         else:
             x = x[:, -dense.size(1):]
         f -= f_h
-    x = dit.head(x, t)
+    x = dit.head(x, t_mod)
     if use_unified_sequence_parallel:
         if dist.is_initialized() and dist.get_world_size() > 1:
             x = get_sp_group().all_gather(x, dim=1)

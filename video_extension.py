@@ -161,6 +161,8 @@ def main(args):
             prompt=prompt,
             negative_prompt=negative_prompt,
             seed=args.seed,
+            cfg_scale=args.cfg_scale,
+            num_inference_steps=args.num_inference_steps,
             tiled=args.tiled,
             height=TARGET_SIZE[1],
             width=TARGET_SIZE[0],
@@ -211,6 +213,8 @@ if __name__ == "__main__":
     parser.add_argument("--v2v_mode", action="store_true", help="Use V2V for extension steps: input_video=previous segment, denoising_strength")
     parser.add_argument("--denoising_strength", type=float, default=0.85, help="Denoising strength for V2V steps (default 0.85)")
     parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--cfg_scale", type=float, default=5.0, help="Classifier-free guidance scale (higher = more prompt adherence, default 5.0)")
+    parser.add_argument("--num_inference_steps", type=int, default=50, help="Number of denoising steps (more = better quality but slower, default 50)")
     parser.add_argument("--tiled", action="store_true", help="Use VAE tiling")
     parser.add_argument("--fps", type=int, default=16)
     parser.add_argument("--quality", type=int, default=10)
