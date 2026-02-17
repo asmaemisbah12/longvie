@@ -567,8 +567,8 @@ class LongViePipeline(BasePipeline):
             "animate_pose_video": animate_pose_video, "animate_face_video": animate_face_video, "animate_inpaint_video": animate_inpaint_video, "animate_mask_video": animate_mask_video,
             "dense_video": dense_video,
             "sparse_video": sparse_video,
-            "dense_image": dense_video[0],
-            "sparse_image": sparse_video[0],
+            "dense_image": dense_video[0] if dense_video is not None else None,
+            "sparse_image": sparse_video[0] if sparse_video is not None else None,
         }
         for unit in self.units:
             inputs_shared, inputs_posi, inputs_nega = self.unit_runner(unit, self, inputs_shared, inputs_posi, inputs_nega)
@@ -1124,6 +1124,16 @@ def model_fn_wan_video(
     if clip_feature is not None and dit.require_clip_embedding:
         clip_embdding = dit.img_emb(clip_feature)
         context = torch.cat([clip_embdding, context], dim=1)
+
+    # When no dense/sparse control (e.g. extension without depth/track), use zeros so patchify and dual_controller still run
+    if dense is None or sparse is None:
+        # Use x.shape[1] (same in_ch as patch_embedding, 36) to avoid accessing wrapped dit.patch_embedding.weight
+        control_in_ch = x.shape[1]
+        b, t, h, w = x.shape[0], x.shape[2], x.shape[3], x.shape[4]
+        if dense is None:
+            dense = torch.zeros(b, control_in_ch, t, h, w, device=x.device, dtype=x.dtype)
+        if sparse is None:
+            sparse = torch.zeros(b, control_in_ch, t, h, w, device=x.device, dtype=x.dtype)
 
     x = dit.patchify(x, control_camera_latents_input)
 
